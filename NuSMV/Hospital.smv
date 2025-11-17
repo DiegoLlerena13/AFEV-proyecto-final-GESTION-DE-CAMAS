@@ -1,0 +1,79 @@
+MODULE main
+VAR
+    cama_disponible : boolean;
+    paciente_estado : {espera, asignado};
+    riesgo : {Alto, Medio, Bajo};
+
+    colaAlto : 0..100;
+    colaMedio : 0..100;
+    colaBajo : 0..100;
+
+INIT
+    cama_disponible = TRUE &
+    paciente_estado = espera &
+    riesgo = Bajo &
+    colaAlto = 0 &
+    colaMedio = 0 &
+    colaBajo = 0;
+
+ASSIGN
+    next(paciente_estado) :=
+        case
+            paciente_estado = espera & cama_disponible = TRUE : asignado;
+            paciente_estado = espera & cama_disponible = FALSE : espera;
+            paciente_estado = asignado : asignado;
+        esac;
+
+    next(cama_disponible) :=
+        case
+            paciente_estado = espera & cama_disponible = TRUE : FALSE;
+            paciente_estado = asignado : FALSE;
+            TRUE : cama_disponible;
+        esac;
+
+    next(colaAlto) :=
+        case
+            paciente_estado = espera & cama_disponible = FALSE & riesgo = Alto &
+                colaAlto < 100 : colaAlto + 1;
+
+            paciente_estado = asignado & colaAlto > 0 : colaAlto - 1;
+
+            TRUE : colaAlto;
+        esac;
+
+    next(colaMedio) :=
+        case
+            paciente_estado = espera & cama_disponible = FALSE & riesgo = Medio &
+                colaMedio < 100 : colaMedio + 1;
+
+            paciente_estado = asignado & colaMedio > 0 & colaAlto = 0 :
+                colaMedio - 1;
+
+            TRUE : colaMedio;
+        esac;
+
+    next(colaBajo) :=
+        case
+            paciente_estado = espera & cama_disponible = FALSE & riesgo = Bajo &
+                colaBajo < 100 : colaBajo + 1;
+
+            paciente_estado = asignado & colaBajo > 0 &
+                colaAlto = 0 & colaMedio = 0 : colaBajo - 1;
+
+            TRUE : colaBajo;
+        esac;
+
+LTLSPEC
+    G (paciente_estado = asignado -> X cama_disponible = FALSE);
+
+LTLSPEC
+    G ! (paciente_estado = asignado & cama_disponible = TRUE);
+
+LTLSPEC
+    G (colaAlto > 0 -> colaMedio = colaMedio & colaBajo = colaBajo);
+
+LTLSPEC
+    G (colaMedio > 0 & colaAlto = 0 -> colaBajo = colaBajo);
+
+LTLSPEC
+    G (riesgo = Alto -> F paciente_estado = asignado);
