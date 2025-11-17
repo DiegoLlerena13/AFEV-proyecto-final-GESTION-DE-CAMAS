@@ -1,0 +1,34 @@
+class Cama
+
+instance variables
+    id : token;
+    disponible : bool;
+
+operations
+
+    public Cama : token ==> Cama
+    Cama(i) ==
+    (
+        id := i;
+        disponible := true;
+        return self;
+    );
+
+    public Ocupar : () ==> ()
+    Ocupar() ==
+        disponible := false
+    pre disponible = true;
+
+    public Liberar : () ==> ()
+    Liberar() ==
+        disponible := true
+    pre disponible = false;
+
+    -- Getters públicos
+    public GetId : () ==> token
+    GetId() == return id;
+
+    public EstaDisponible : () ==> bool
+    EstaDisponible() == return disponible;
+
+end Cama

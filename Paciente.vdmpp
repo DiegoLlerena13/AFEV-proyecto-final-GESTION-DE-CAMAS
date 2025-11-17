@@ -1,0 +1,45 @@
+class Paciente
+
+instance variables
+    id : token;
+    nombre : seq1 of char;
+    riesgo : <Alto> | <Medio> | <Bajo>;
+    camaAsignada : [token];
+
+operations
+
+    public Paciente : token * seq1 of char * (<Alto> | <Medio> | <Bajo>) ==> Paciente
+    Paciente(i, n, r) ==
+    (
+        id := i;
+        nombre := n;
+        riesgo := r;
+        camaAsignada := nil;
+        return self;
+    )
+    pre n <> [];
+
+    public AssignBed : token ==> ()
+    AssignBed(camaId) ==
+        camaAsignada := camaId
+    pre camaAsignada = nil;
+
+    public ReleaseBed : () ==> ()
+    ReleaseBed() ==
+        camaAsignada := nil
+    pre camaAsignada <> nil;
+
+    -- Getters públicos
+    public GetId : () ==> token
+    GetId() == return id;
+
+    public GetNombre : () ==> seq1 of char
+    GetNombre() == return nombre;
+
+    public GetRiesgo : () ==> <Alto> | <Medio> | <Bajo>
+    GetRiesgo() == return riesgo;
+
+    public GetCamaAsignada : () ==> [token]
+    GetCamaAsignada() == return camaAsignada;
+
+end Paciente

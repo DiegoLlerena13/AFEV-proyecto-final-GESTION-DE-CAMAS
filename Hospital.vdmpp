@@ -1,0 +1,57 @@
+class Hospital
+
+instance variables
+    id : token;
+    nombre : seq1 of char;
+    camas : map token to Cama;
+
+operations
+
+    public Hospital : token * seq1 of char * map token to Cama ==> Hospital
+    Hospital(i, n, c) ==
+    (
+        id := i;
+        nombre := n;
+        camas := c;
+        return self;
+    )
+    pre n <> [];
+
+    public GetCama : token ==> Cama
+    GetCama(cid) ==
+        return camas(cid)
+    pre cid in set dom camas;
+
+    public CamasDisponibles : () ==> set of Cama
+    CamasDisponibles() ==
+        return { camas(k) | k in set dom camas & camas(k).EstaDisponible() = true };
+
+    -- Nueva operación: Asignar cama de forma coordinada
+    public AsignarCamaAPaciente : Cama * Paciente ==> ()
+    AsignarCamaAPaciente(cama, paciente) ==
+    (
+        cama.Ocupar();
+        paciente.AssignBed(cama.GetId());
+    )
+    pre cama.EstaDisponible() = true and paciente.GetCamaAsignada() = nil;
+
+    -- Nueva operación: Liberar cama de forma coordinada
+    public LiberarCamaDePaciente : Paciente ==> ()
+    LiberarCamaDePaciente(paciente) ==
+    (
+        dcl camaId : token := paciente.GetCamaAsignada();
+        dcl cama : Cama := camas(camaId);
+        cama.Liberar();
+        paciente.ReleaseBed();
+    )
+    pre paciente.GetCamaAsignada() <> nil and 
+        paciente.GetCamaAsignada() in set dom camas;
+
+    -- Getters públicos
+    public GetId : () ==> token
+    GetId() == return id;
+
+    public GetNombre : () ==> seq1 of char
+    GetNombre() == return nombre;
+
+end Hospital

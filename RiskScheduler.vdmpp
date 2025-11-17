@@ -1,0 +1,107 @@
+class RiskScheduler
+
+instance variables
+    hospital : Hospital;
+    colaAlto : seq of Paciente := [];
+    colaMedio : seq of Paciente := [];
+    colaBajo : seq of Paciente := [];
+
+operations
+
+    public RiskScheduler : Hospital ==> RiskScheduler
+    RiskScheduler(h) ==
+    (
+        hospital := h;
+        return self;
+    )
+    pre h.GetNombre() <> [];
+
+    public RegistrarPaciente : Paciente ==> ()
+    RegistrarPaciente(p) ==
+    (
+        dcl camasDisp : set of Cama := hospital.CamasDisponibles();
+        
+        if camasDisp <> {} then
+            AsignarCamaInmediata(p, camasDisp)
+        else
+            AgregarACola(p);
+    )
+    pre p.GetCamaAsignada() = nil;
+
+    private AsignarCamaInmediata : Paciente * set of Cama ==> ()
+    AsignarCamaInmediata(p, camas) ==
+    (
+        dcl seleccionada : Cama := let c in set camas in c;
+        hospital.AsignarCamaAPaciente(seleccionada, p);
+    )
+    pre camas <> {};
+
+    private AgregarACola : Paciente ==> ()
+    AgregarACola(p) ==
+        cases p.GetRiesgo():
+            <Alto>  -> colaAlto := colaAlto ^ [p],
+            <Medio> -> colaMedio := colaMedio ^ [p],
+            <Bajo>  -> colaBajo := colaBajo ^ [p]
+        end;
+
+    public LiberarCama : Paciente ==> ()
+    LiberarCama(p) ==
+    (
+        hospital.LiberarCamaDePaciente(p);
+        ProcesarCola();
+    )
+    pre p.GetCamaAsignada() <> nil;
+
+    private ProcesarCola : () ==> ()
+    ProcesarCola() ==
+    (
+        dcl camasDisp : set of Cama := hospital.CamasDisponibles();
+        
+        while camasDisp <> {} and TieneEnEspera() do
+        (
+            dcl siguiente : Paciente := ObtenerSiguientePaciente();
+            AsignarCamaInmediata(siguiente, camasDisp);
+            camasDisp := hospital.CamasDisponibles();
+        );
+    );
+
+    private TieneEnEspera : () ==> bool
+    TieneEnEspera() ==
+        return colaAlto <> [] or colaMedio <> [] or colaBajo <> [];
+
+    private ObtenerSiguientePaciente : () ==> Paciente
+    ObtenerSiguientePaciente() ==
+        if colaAlto <> [] then
+        (
+            dcl p : Paciente := hd colaAlto;
+            colaAlto := tl colaAlto;
+            return p;
+        )
+        elseif colaMedio <> [] then
+        (
+            dcl p : Paciente := hd colaMedio;
+            colaMedio := tl colaMedio;
+            return p;
+        )
+        else
+        (
+            dcl p : Paciente := hd colaBajo;
+            colaBajo := tl colaBajo;
+            return p;
+        )
+    pre TieneEnEspera();
+
+    public GetColaAlto : () ==> seq of Paciente
+    GetColaAlto() == return colaAlto;
+
+    public GetColaMedio : () ==> seq of Paciente
+    GetColaMedio() == return colaMedio;
+
+    public GetColaBajo : () ==> seq of Paciente
+    GetColaBajo() == return colaBajo;
+
+    public GetTotalEnEspera : () ==> nat
+    GetTotalEnEspera() == 
+        return len colaAlto + len colaMedio + len colaBajo;
+
+end RiskScheduler
