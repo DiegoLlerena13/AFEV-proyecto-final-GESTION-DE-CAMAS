@@ -26,7 +26,6 @@ operations
     CamasDisponibles() ==
         return { camas(k) | k in set dom camas & camas(k).EstaDisponible() = true };
 
-    -- Nueva operación: Asignar cama de forma coordinada
     public AsignarCamaAPaciente : Cama * Paciente ==> ()
     AsignarCamaAPaciente(cama, paciente) ==
     (
@@ -35,7 +34,6 @@ operations
     )
     pre cama.EstaDisponible() = true and paciente.GetCamaAsignada() = nil;
 
-    -- Nueva operación: Liberar cama de forma coordinada
     public LiberarCamaDePaciente : Paciente ==> ()
     LiberarCamaDePaciente(paciente) ==
     (
@@ -47,7 +45,6 @@ operations
     pre paciente.GetCamaAsignada() <> nil and 
         paciente.GetCamaAsignada() in set dom camas;
 
-    -- Getters públicos
     public GetId : () ==> token
     GetId() == return id;
 

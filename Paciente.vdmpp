@@ -29,7 +29,6 @@ operations
         camaAsignada := nil
     pre camaAsignada <> nil;
 
-    -- Getters públicos
     public GetId : () ==> token
     GetId() == return id;
 
